@@ -1,5 +1,7 @@
 import frappe
+from .utils import get_sentry_dsn, sentry_enabled
 
 
 def boot_session(bootinfo):
-	bootinfo.sentry_dsn = frappe.db.get_single_value("Sentry Settings", "sentry_dsn")
+	bootinfo.sentry_dsn = get_sentry_dsn()
+	bootinfo.sentry_enabled = sentry_enabled()
