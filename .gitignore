@@ -6,10 +6,10 @@ locale
 .wnf-lang-status
 *.swp
 tags
+sentry/docs/current
 *.egg-info
 dist/
 build/
-frappe/docs/current
 .vscode
 node_modules
 .kdev4/

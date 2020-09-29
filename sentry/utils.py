@@ -1,16 +1,6 @@
-import gzip
-import io
-import json
-from datetime import datetime, timedelta
-
-import requests
-import sentry_sdk
-from sentry_sdk import Transport, capture_exception, configure_scope
-from sentry_sdk.integrations.redis import RedisIntegration
-from sentry_sdk.integrations.rq import RqIntegration
-from sentry_sdk.utils import capture_internal_exceptions, logger
-
 import frappe
+import sentry_sdk
+from sentry_sdk.integrations.rq import RqIntegration
 
 def init_sentry():
 	sentry_dsn = get_sentry_dsn()
@@ -18,21 +8,19 @@ def init_sentry():
 		return
 
 	if sentry_enabled():
-		sentry_sdk.init(sentry_dsn, integrations=[RqIntegration(), RedisIntegration()])
+		sentry_sdk.init(sentry_dsn, integrations=[RqIntegration()])
 
-def handle():
+def capture_exception():
 	init_sentry()
-	with configure_scope() as scope:
+	with sentry_sdk.configure_scope() as scope:
 		scope.user = {"email": frappe.session.user}
 		scope.set_tag("site", frappe.local.site)
-	capture_exception()
+	sentry_sdk.capture_exception()
 
 @frappe.whitelist(allow_guest=True)
 def get_sentry_dsn():
-	sentry_dsn = frappe.conf.get("sentry_dsn")
-	if not sentry_dsn:
-		sentry_dsn = frappe.db.get_single_value("Sentry Settings", "sentry_dsn")
-	return sentry_dsn
+	if sentry_enabled():
+		return frappe.conf.get("sentry_dsn")
 
 def sentry_enabled():
 	enabled = True
